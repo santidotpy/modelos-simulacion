@@ -64,28 +64,17 @@ class Calentador:
         plt.show()
 
     def calcular_perdida_calor(self, coeficiente_conductividad, superficie_total, espesor_pared):
-        # Calcular la pérdida de calor según la fórmula dada
         perdida_calor = coeficiente_conductividad * superficie_total * self.temperatura / espesor_pared
         return perdida_calor
 
-# Crear instancia del calentador
+
 calentador1 = Calentador(30, 1000, 300, 220)
 
 # Especificaciones del diseño del dispositivo
-coeficiente_conductividad = 2.1  # CCT en Watts/metro Kelvin
-superficie_total = 1  # Sup en metros cuadrados
-espesor_pared = 0.001  # Esp en metros
+coeficiente_conductividad = 2.1  # en Watts/metro Kelvin
+superficie_total = 1  # en metros cuadrados
+espesor_pared = 0.001  # en metros
 
 # Calcular la pérdida de calor
 perdida_calor = calentador1.calcular_perdida_calor(coeficiente_conductividad, superficie_total, espesor_pared)
 print("Pérdida de calor del dispositivo:", perdida_calor, "Watts/grado Kelvin")
-
-
-
-# calentador1 = Calentador(30, 1000, 300, 220)
-
-# # nuevo delta de temperatura
-# nuevo_delta = calentador1.calculo_delta_temp()
-
-# # grafico de la variación de temperatura
-# calentador1.graficar(nuevo_delta)
