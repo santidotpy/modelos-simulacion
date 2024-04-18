@@ -1,6 +1,6 @@
 ## Trabajo Práctico 2
 
-Nuestro primer Trabajo Práctico, T.P. 1, 
+Nuestro segundo Trabajo Práctico, T.P. 2, 
 consiste en que cada uno de Ustedes establezca los parámetros requeridos para simular un calentador de agua eléctrico, 
 de acuerdo a sus preferencias. Deberán decidir:
 
