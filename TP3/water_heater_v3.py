@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
 
 class Calentador:
@@ -48,32 +48,18 @@ class Calentador:
         nuevo_delta = potencia / ((self.masa / 1000) * self.constante_calor * 1000)
         return nuevo_delta
     
-    def graficar(self, nuevo_delta):
-        tiempo = self.tiempo
-        y = [nuevo_delta * i for i in range(1, tiempo + 1)]
-        x = np.arange(1, tiempo + 1)
-        slope, intercept = np.polyfit(x, y, 1)
-        y_line = slope * x + intercept
-
-        # muestro el gráfico
-        plt.plot(x, y_line, 'b-')
-        plt.xlabel('Tiempo (s)')
-        plt.ylabel('Delta de Temperatura')
-        plt.title('Variación de Temperatura con el Tiempo')
-        plt.grid(True)
-        plt.show()
 
     def calcular_perdida_calor(self, coeficiente_conductividad, superficie_total, espesor_pared):
-        perdida_calor = coeficiente_conductividad * superficie_total * self.temperatura / espesor_pared
+        perdida_calor = coeficiente_conductividad * (superficie_total * self.calculo_delta_temp() ) / espesor_pared
         return perdida_calor
 
 
-calentador1 = Calentador(30, 1000, 300, 220)
+calentador1 = Calentador(8, 1000, 300, 220)
 
 # Especificaciones del diseño del dispositivo
-coeficiente_conductividad = 2.1  # en Watts/metro Kelvin
-superficie_total = 1  # en metros cuadrados
-espesor_pared = 0.001  # en metros
+coeficiente_conductividad = 0.23  # en Watts/metro Kelvin
+superficie_total = 0.075  # en metros cuadrados
+espesor_pared = 0.01  # en metros
 
 # Calcular la pérdida de calor
 perdida_calor = calentador1.calcular_perdida_calor(coeficiente_conductividad, superficie_total, espesor_pared)

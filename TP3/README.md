@@ -12,3 +12,11 @@ Unidades en metros y grados Kelvin.
 
 > [!NOTE]  
 > Tener en cuenta la pérdida de calor del material.
+
+
+calcular la superficie del recipiente, el volumen, la pérdida de calor y la temperatura final del líquido en el recipiente.
+
+750 c2 1.2 litros
+espesor 1mm
+
+considerar temperatura del agua y del ambiente
