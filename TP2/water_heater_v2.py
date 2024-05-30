@@ -1,73 +1,71 @@
 import matplotlib.pyplot as plt
-import numpy as np
 
 class Calentador:
-    def __init__(self, temperatura_inicial, masa, tiempo, voltaje):
-        self.temperatura = temperatura_inicial
-        self.masa = masa
-        self.set_tiempo(tiempo)
-        self.constante_calor = 4.18  # constante de calor específico del agua
-        self.voltaje = voltaje
+    def __init__(self, material, forma, capacidad, proposito, fluido, tiempo_deseado, tension, resistencia, temp_inicial, temp_ambiente):
+        self.material = material
+        self.forma = forma
+        self.capacidad = capacidad
+        self.proposito = proposito
+        self.fluido = fluido
+        self.tiempo_deseado = tiempo_deseado
+        self.tension = tension
+        self.resistencia = resistencia
+        self.temp_inicial = temp_inicial
+        self.temp_ambiente = temp_ambiente
+        self.cp = self.get_specific_heat_capacity(fluido)  # Calor específico del fluido en J/(kg·K)
 
-    def get_temperatura(self):
-        return self.temperatura
-    
-    def set_temperatura(self, temperatura):
-        self.temperatura = temperatura
-    
-    def get_masa(self):
-        return self.masa
-    
-    def set_masa(self, masa):
-        self.masa = masa
+    def get_specific_heat_capacity(self, fluido):
+        # Calor específico en J/(kg·K)
+        capacidades = {
+            'agua': 4181,
+            'aceite': 1970,
+            'miel': 1420,
+            'alcohol': 2440
+        }
+        return capacidades.get(fluido.lower(), 4181)  # Valor por defecto: agua
 
-    def get_tiempo(self):
-        return self.tiempo
-    
-    def set_tiempo(self, tiempo):
-        if tiempo >= 0:
-            self.tiempo = tiempo
-        else:
-            print("El tiempo debe ser positivo y en segundos")
-    
-    def get_voltaje(self):
-        return self.voltaje
-    
-    def set_voltaje(self, voltaje):
-        self.voltaje = voltaje
+    def potencia(self):
+        # Potencia eléctrica P = V^2 / R
+        return (self.tension ** 2) / self.resistencia
 
-    def calculo_delta_temp(self):
-        delta_t = 100 - self.temperatura
-        calor = self.constante_calor * self.masa * delta_t
-        potencia = calor / self.tiempo
-        # corriente = potencia / self.voltaje
+    def calor_generado(self, tiempo):
+        # Calor Q = P * t
+        return self.potencia() * tiempo
 
-        # Resistencia
-        # resistencia = self.voltaje / corriente
+    def aumento_temperatura(self, tiempo):
+        # Aumento de temperatura ΔT = Q / (m * cp)
+        masa = self.capacidad / 1000  # Convertir capacidad de cc a kg (suponiendo densidad de agua = 1 g/cc)
+        Q = self.calor_generado(tiempo)
+        return Q / (masa * self.cp)
 
-        nuevo_delta = potencia / ((self.masa / 1000) * self.constante_calor * 1000)
-        return nuevo_delta
-    
-    def graficar(self, nuevo_delta):
-        tiempo = self.tiempo
-        y = [nuevo_delta * i for i in range(1, tiempo + 1)]
-        x = np.arange(1, tiempo + 1)
-        slope, intercept = np.polyfit(x, y, 1)
-        y_line = slope * x + intercept
+    def grafico_aumento_temperatura(self, tiempo_total):
+        tiempos = list(range(tiempo_total + 1))
+        temperaturas = [self.temp_inicial]
 
-        # muestro el gráfico
-        plt.plot(x, y_line, 'b-')
-        plt.xlabel('Tiempo (s)')
-        plt.ylabel('Delta de Temperatura')
-        plt.title('Variación de Temperatura con el Tiempo')
+        for t in tiempos[1:]:
+            aumento_temp = self.aumento_temperatura(t)
+            temperaturas.append(self.temp_inicial + aumento_temp)
+
+        plt.plot(tiempos, temperaturas)
+        plt.xlabel('Tiempo (segundos)')
+        plt.ylabel('Temperatura (°C)')
+        plt.title('Aumento de temperatura del fluido en el tiempo')
         plt.grid(True)
         plt.show()
 
+# Ejemplo de uso
+calentador = Calentador(
+    material='espuma de poliestireno',
+    forma='cilíndrica',
+    capacidad=1000,  # en cc
+    proposito='agua para el té',
+    fluido='agua',
+    tiempo_deseado=300,  # en segundos
+    tension=220,  # en volts
+    resistencia=50,  # en ohms
+    temp_inicial=25,  # en grados Celsius
+    temp_ambiente=20  # en grados Celsius
+)
 
-calentador1 = Calentador(30, 1000, 300, 220)
-
-# nuevo delta de temperatura
-nuevo_delta = calentador1.calculo_delta_temp()
-
-# grafico de la variación de temperatura
-calentador1.graficar(nuevo_delta)
+# Graficar aumento de temperatura del fluido durante 300 segundos
+calentador.grafico_aumento_temperatura(300)
