@@ -14,3 +14,19 @@ de acuerdo a sus preferencias. Deberán decidir:
 - Cuál será la temperatura inicial del fluido al conectarlo al calentador?
 - Cuál será la temperatura ambiente al iniciar el proceso?
 - Calcular el aumento de temperatura del fluido luego de 1 segundo de conectar la alimentación, suponiendo que no existe pérdida de calor.
+
+
+#
+### Infrome del experimento
+
+- Material del recipiente: espuma de poliestireno expandido (telgopor)
+- Forma del recipiente: cilíndrica
+- Capacidad del recipiente: 1000 cc
+- Tiempo deseado: 300 segundos
+- Tension: 220 
+- Resistencia: 50 ohm
+- Temperatura Inicial: 25 grados Celsius
+- Temperatura del ambiente: 20 grados Celsius
+
+
+Luego de 1 segundo de conectar la alimentación, el aumento de temperatura del fluido es de `0.23 °C`.
