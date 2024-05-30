@@ -17,3 +17,24 @@ de acuerdo a sus preferencias. Deberán decidir:
 
 > [!NOTE]  
 > Permitir cambio de parámetros. No se considera la pérdida de calor.
+
+
+
+#
+### Infrome del experimento?
+
+- Material del recipiente: espuma de poliestireno expandido (telgopor)
+- Forma del recipiente: cilíndrica
+- Capacidad del recipiente: 1000 cc
+- Tiempo deseado: 300 segundos
+- Tension: 220 
+- Resistencia: 50 ohm
+- Temperatura Inicial: 25 grados Celsius
+- Temperatura del ambiente: 20 grados Celsius
+
+
+Luego de 1 segundo de conectar la alimentación, el aumento de temperatura del fluido es de `0.23 °C`.
+
+### Gráfico del cambio de temperatura a lo largo del tiempo (segundos)
+
+![Gráfico de temperatura](./images/Figure_1.png)
