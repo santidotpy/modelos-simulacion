@@ -1,71 +1,66 @@
 import matplotlib.pyplot as plt
+from data_heater import temperatura_inicial_fluido, temperatura, masa, tiempo, voltaje
+from water_heater_v2 import Calentador
 
-class Calentador:
-    def __init__(self, temperatura_inicial, masa, tiempo, voltaje):
-        self.temperatura_fluido = temperatura_inicial
-        self.masa = masa
-        self.set_tiempo(tiempo)
-        self.constante_calor = 4.18  # Constante de calor específico del agua
-        self.voltaje = voltaje
-        self.perdida_calor_lista = []  # Lista para almacenar la pérdida de calor en cada paso de tiempo
-        self.temperatura_fluido_lista = []  # Lista para almacenar la temperatura del fluido en cada paso de tiempo
+# Configuración inicial
+resistencia = 50
+potencia_resistencia = 968
+masa_fluido = 1  # en kg
+calor_especifico_fluido = 4186  # en J/(kg*°C)
+ticks_por_segundo = 10
+ticks_totales = tiempo * ticks_por_segundo
 
-    def set_tiempo(self, tiempo):
-        if tiempo > 0:
-            self.tiempo = tiempo
+# Inicialización del calentador
+calentador1 = Calentador(temperatura, masa, tiempo, voltaje)
+
+def calcular_temperatura(ticks, considerar_perdidas):
+    """Calcula la temperatura del fluido con o sin pérdidas."""
+    temperatura = temperatura_inicial_fluido
+    for _ in range(ticks):
+        if considerar_perdidas:
+            potencia_efectiva = potencia_resistencia - (temperatura - temperatura_inicial_fluido) * 10
         else:
-            print("El tiempo debe ser mayor que cero")
+            potencia_efectiva = potencia_resistencia
 
-    def calcular_perdida_calor(self, coeficiente_conductividad, superficie_total, espesor_pared):
-        perdida_calor = coeficiente_conductividad * superficie_total * self.temperatura_fluido / espesor_pared
-        return perdida_calor
+        calor_suministrado = potencia_efectiva / ticks_por_segundo
+        calor_absorbido = calor_especifico_fluido * masa_fluido
+        delta_temperatura = calor_suministrado / calor_absorbido
+        temperatura += delta_temperatura
+    return temperatura
+
+def generar_datos_temperatura():
+    """Genera listas de temperaturas con y sin pérdidas."""
+    temperaturas_con_perdidas = [temperatura_inicial_fluido]
+    temperaturas_sin_perdidas = [temperatura_inicial_fluido]
+
+    for tick in range(1, ticks_totales + 1):
+        temp_con_perdidas = calcular_temperatura(tick, considerar_perdidas=True)
+        temp_sin_perdidas = calcular_temperatura(tick, considerar_perdidas=False)
+        temperaturas_con_perdidas.append(temp_con_perdidas)
+        temperaturas_sin_perdidas.append(temp_sin_perdidas)
+
+    return temperaturas_con_perdidas, temperaturas_sin_perdidas
+
+def graficar_temperaturas(tiempo, temperaturas_con_perdidas, temperaturas_sin_perdidas):
+    """Genera una gráfica de las temperaturas con y sin pérdidas a lo largo del tiempo."""
+    plt.plot(tiempo, temperaturas_con_perdidas, label='Con pérdidas', color='blue')
+    plt.plot(tiempo, temperaturas_sin_perdidas, label='Sin pérdidas', color='red')
+    plt.xlabel('Tiempo (s)')
+    plt.ylabel('Temperatura del agua (°C)')
+    plt.title('Temperatura del agua en el calentador')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+def main():
+    # Generar datos de temperatura
+    temperaturas_con_perdidas, temperaturas_sin_perdidas = generar_datos_temperatura()
     
-    def simular_calentamiento(self, coeficiente_conductividad, superficie_total, espesor_pared):
-        for _ in range(self.tiempo):
-            # Calcular la pérdida de calor
-            perdida_calor = self.calcular_perdida_calor(coeficiente_conductividad, superficie_total, espesor_pared)
-            self.perdida_calor_lista.append(perdida_calor)
-            
-            # Calcular el calor efectivo entregado al fluido (restar la pérdida de calor)
-            calor_efectivo = self.voltaje - perdida_calor
-            
-            # Calcular la variación de temperatura del fluido
-            delta_t = calor_efectivo / (self.masa * self.constante_calor)
-            
-            # Actualizar la temperatura del fluido
-            self.temperatura_fluido += delta_t
-            self.temperatura_fluido_lista.append(self.temperatura_fluido)
+    # Lista de tiempo en segundos para cada tick
+    tiempo = [i / ticks_por_segundo for i in range(ticks_totales + 1)]
     
-    def graficar_temperatura_fluido(self):
-        plt.plot(range(1, self.tiempo + 1), self.temperatura_fluido_lista, 'b-', label='Con Pérdidas')
-        plt.plot(range(1, self.tiempo + 1), [self.temperatura_fluido] * self.tiempo, 'r--', label='Sin Pérdidas')
-        plt.xlabel('Tiempo (s)')
-        plt.ylabel('Temperatura del Fluido (°C)')
-        plt.title('Temperatura del Fluido con y sin Pérdidas')
-        plt.legend()
-        plt.grid(True)
-        
-        # Ajustar el rango de los ejes
-        plt.xlim(1, self.tiempo)
-        plt.ylim(min(self.temperatura_fluido_lista) - 5, max(self.temperatura_fluido_lista) + 5)
-        
-        # Cambiar el formato de los ejes
-        plt.xticks(range(0, self.tiempo + 1, 50))
-        
-        # Mostrar la gráfica
-        plt.show()
+    # Graficar los resultados
+    graficar_temperaturas(tiempo, temperaturas_con_perdidas, temperaturas_sin_perdidas)
 
-
-# Crear instancia del calentador
-calentador1 = Calentador(30, 1000, 300, 220)
-
-# Especificaciones del diseño del dispositivo
-coeficiente_conductividad = 2.1  # CCT en Watts/metro Kelvin
-superficie_total = 1  # Sup en metros cuadrados
-espesor_pared = 0.001  # Esp en metros
-
-# Simular el calentamiento con pérdidas
-calentador1.simular_calentamiento(coeficiente_conductividad, superficie_total, espesor_pared)
-
-# Graficar la temperatura del fluido con y sin pérdidas
-calentador1.graficar_temperatura_fluido()
+if __name__ == '__main__':
+    main()
