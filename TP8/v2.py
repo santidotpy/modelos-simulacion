@@ -2,14 +2,12 @@ import pygame
 import random
 import locale
 import numpy as np
-from scipy.stats import truncnorm
-import matplotlib.pyplot as plt
 
 locale.setlocale(locale.LC_ALL, '')
 
 # Pygame config
 pygame.init()
-WIDTH, HEIGHT = 800, 600  # Incrementamos la altura para dejar espacio para el gráfico
+WIDTH, HEIGHT = 800, 400
 SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Simulación de Sistema de Atención al Público')
 CLOCK = pygame.time.Clock()
@@ -21,7 +19,7 @@ GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 
 # parametros predefinidos
-NUM_BOXES = random.randint(1, 5)
+NUM_BOXES = random.randint(1, 10)
 BOX_COST = 1000
 CUSTOMER_LOSS_COST = 10000
 OPEN_HOURS = 4
@@ -29,6 +27,13 @@ SECONDS_PER_HOUR = 3600
 TOTAL_SECONDS = OPEN_HOURS * SECONDS_PER_HOUR
 SERVICE_TIME_MEAN = 10 * 60
 SERVICE_TIME_STD_DEV = 5 * 60
+
+# Distribución de llegada de clientes
+ARRIVAL_MEAN_HOUR = 10
+ARRIVAL_STD_DEV_HOUR = 2
+ARRIVAL_START_HOUR = 8
+ARRIVAL_END_HOUR = 12
+TOTAL_CUSTOMERS_EXPECTED = 100
 
 # variables
 customers = []
@@ -66,7 +71,7 @@ class Customer:
         """Verifica si el cliente ya fue atendido."""
         return self.service_end_time is not None and current_time >= self.service_end_time
 
-def draw_simulation(screen, boxes, waiting_queue, histogram_img=None):
+def draw_simulation(screen, boxes, waiting_queue):
     """Dibuja el estado actual de la simulación en la pantalla."""
     screen.fill(BLACK)
     for i in range(NUM_BOXES):
@@ -74,35 +79,34 @@ def draw_simulation(screen, boxes, waiting_queue, histogram_img=None):
         pygame.draw.rect(screen, color, (50 + i * 70, 50, 60, 60))
     for i, customer in enumerate(waiting_queue):
         pygame.draw.circle(screen, WHITE, (100, 150 + i * 30), 10)
-    
-    # Dibujar el histograma si existe
-    if histogram_img:
-        screen.blit(histogram_img, (0, HEIGHT // 2))
-    
     pygame.display.flip()
 
-def generate_arrival_times(mean, std, size, lower, upper):
-    """Genera tiempos de llegada basados en una distribución normal truncada."""
-    a, b = (lower - mean) / std, (upper - mean) / std
-    arrival_times = truncnorm.rvs(a, b, loc=mean, scale=std, size=size)
-    arrival_times_seconds = ((arrival_times - 8) * SECONDS_PER_HOUR).astype(int)
-    return arrival_times_seconds
-
-arrival_times = generate_arrival_times(10, 2, 1000, 8, 12)
+def generate_arrival_times(mean_hour, std_dev_hour, total_customers, start_hour, end_hour):
+    """Genera tiempos de llegada para los clientes según una distribución normal truncada."""
+    arrival_times = []
+    while len(arrival_times) < total_customers:
+        arrival_time = random.gauss(mean_hour, std_dev_hour) * SECONDS_PER_HOUR
+        if start_hour * SECONDS_PER_HOUR <= arrival_time <= end_hour * SECONDS_PER_HOUR:
+            arrival_times.append(int(arrival_time) - start_hour * SECONDS_PER_HOUR)
+    arrival_times.sort()
+    return arrival_times
 
 def main():
     global current_time, served_customers, unserved_customers, total_customers
+
+    arrival_times = generate_arrival_times(ARRIVAL_MEAN_HOUR, ARRIVAL_STD_DEV_HOUR, TOTAL_CUSTOMERS_EXPECTED, ARRIVAL_START_HOUR, ARRIVAL_END_HOUR)
+    print(f"Tiempos de llegada generados: {arrival_times}")
     running = True
-    customer_index = 0
     while running and current_time <= TOTAL_SECONDS:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-        if customer_index < len(arrival_times) and arrival_times[customer_index] == current_time:
+        # Añadir clientes basados en los tiempos de llegada generados
+        if arrival_times and current_time >= arrival_times[0]:
             customers.append(Customer(current_time))
             total_customers += 1
-            customer_index += 1
+            arrival_times.pop(0)
 
         for i in range(NUM_BOXES):
             if boxes[i] is None and waiting_queue:
@@ -130,7 +134,6 @@ def main():
 
     pygame.quit()
     calculate_statistics()
-    plot_arrival_histogram(arrival_times)
 
 def calculate_statistics():
     """Calcula y muestra las estadísticas de la simulación."""
@@ -156,24 +159,6 @@ def calculate_statistics():
     print(f'Tiempo mínimo de espera en salón: {min_waiting_time / 60:.2f} minutos')
     print(f'Tiempo máximo de espera en salón: {max_waiting_time / 60:.2f} minutos')
     print(f"Costo total de operación: {locale.currency(total_cost, grouping=True)}")
-
-def plot_arrival_histogram(arrival_times):
-    """Genera un histograma de los tiempos de llegada de los clientes y lo muestra en Pygame."""
-    arrival_hours = arrival_times / SECONDS_PER_HOUR + 8  # Convertir de segundos a horas
-    plt.hist(arrival_hours, bins=20, color='orange', edgecolor='black')
-    plt.title('Distribución de llegadas de clientes')
-    plt.xlabel('Hora de llegada')
-    plt.ylabel('Número de clientes')
-    plt.xticks(np.arange(8, 13, 1))
-    plt.grid(True)
-    
-    # Guardar el histograma como imagen
-    plt.savefig("./TP8/images/arrival_histogram.png")
-    plt.close()
-
-    # Cargar la imagen en Pygame
-    histogram_img = pygame.image.load("./TP8/images/arrival_histogram.png")
-    return histogram_img
 
 if __name__ == '__main__':
     main()
