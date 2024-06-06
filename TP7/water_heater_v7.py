@@ -18,7 +18,7 @@ GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 
 # parametros predefinidos
-NUM_BOXES = random.randint(4, 5)
+NUM_BOXES = random.randint(1, 10)
 BOX_COST = 1000
 CUSTOMER_LOSS_COST = 10000
 OPEN_HOURS = 4
