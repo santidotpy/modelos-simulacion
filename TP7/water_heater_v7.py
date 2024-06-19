@@ -6,10 +6,11 @@ locale.setlocale(locale.LC_ALL, '')
 
 # Pygame config
 pygame.init()
-WIDTH, HEIGHT = 800, 400
+WIDTH, HEIGHT = 1200, 800
 SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Simulación de Sistema de Atención al Público')
 CLOCK = pygame.time.Clock()
+FONT = pygame.font.SysFont(None, 24)
 
 # setup colors
 BLACK = (0, 0, 0)
@@ -38,6 +39,7 @@ total_customers = 0
 current_time = 0
 service_times = []
 waiting_times = []
+statistics = {}
 
 def generate_service_time():
     """Genera un tiempo de servicio basado en una distribución normal."""
@@ -64,7 +66,12 @@ class Customer:
         """Verifica si el cliente ya fue atendido."""
         return self.service_end_time is not None and current_time >= self.service_end_time
 
-def draw_simulation(screen, boxes, waiting_queue):
+def draw_text(screen, text, x, y, color=WHITE):
+    """Dibuja el texto en la pantalla."""
+    text_surface = FONT.render(text, True, color)
+    screen.blit(text_surface, (x, y))
+
+def draw_simulation(screen, boxes, waiting_queue, stats):
     """Dibuja el estado actual de la simulación en la pantalla."""
     screen.fill(BLACK)
     for i in range(NUM_BOXES):
@@ -72,10 +79,17 @@ def draw_simulation(screen, boxes, waiting_queue):
         pygame.draw.rect(screen, color, (50 + i * 70, 50, 60, 60))
     for i, customer in enumerate(waiting_queue):
         pygame.draw.circle(screen, WHITE, (100, 150 + i * 30), 10)
+    
+    # Mostrar estadísticas en la parte inferior izquierda
+    y_offset = HEIGHT - (len(stats) * 25) - 10  # Calcular el y_offset para el primer texto
+    for key, value in stats.items():
+        draw_text(screen, f"{key}: {value}", 10, y_offset)
+        y_offset += 25
+    
     pygame.display.flip()
 
 def main():
-    global current_time, served_customers, unserved_customers, total_customers
+    global current_time, served_customers, unserved_customers, total_customers, statistics
     running = True
     while running and current_time <= TOTAL_SECONDS:
         for event in pygame.event.get():
@@ -106,15 +120,15 @@ def main():
                 elif customer not in waiting_queue and customer.service_start_time is None:
                     waiting_queue.append(customer)
 
-        draw_simulation(SCREEN, boxes, waiting_queue)
+        statistics = calculate_statistics()
+        draw_simulation(SCREEN, boxes, waiting_queue, statistics)
         CLOCK.tick(60)
         current_time += 1
 
     pygame.quit()
-    calculate_statistics()
 
 def calculate_statistics():
-    """Calcula y muestra las estadísticas de la simulación."""
+    """Calcula y guarda las estadísticas de la simulación."""
     if service_times:
         min_service_time = min(service_times)
         max_service_time = max(service_times)
@@ -129,14 +143,16 @@ def calculate_statistics():
 
     total_cost = NUM_BOXES * BOX_COST + unserved_customers * CUSTOMER_LOSS_COST
 
-    print(f'Total de clientes: {total_customers}')
-    print(f'Clientes atendidos: {served_customers}')
-    print(f'Clientes no atendidos: {unserved_customers}')
-    print(f'Tiempo mínimo de atención en box: {min_service_time / 60:.2f} minutos')
-    print(f'Tiempo máximo de atención en box: {max_service_time / 60:.2f} minutos')
-    print(f'Tiempo mínimo de espera en salón: {min_waiting_time / 60:.2f} minutos')
-    print(f'Tiempo máximo de espera en salón: {max_waiting_time / 60:.2f} minutos')
-    print(f"Costo total de operación: {locale.currency(total_cost, grouping=True)}")
+    return {
+        'Total de clientes': total_customers,
+        'Clientes atendidos': served_customers,
+        'Clientes no atendidos': unserved_customers,
+        'Tiempo mínimo de atención en box': f'{min_service_time / 60:.2f} minutos',
+        'Tiempo máximo de atención en box': f'{max_service_time / 60:.2f} minutos',
+        'Tiempo mínimo de espera en salón': f'{min_waiting_time / 60:.2f} minutos',
+        'Tiempo máximo de espera en salón': f'{max_waiting_time / 60:.2f} minutos',
+        'Costo total de operación': locale.currency(total_cost, grouping=True)
+    }
 
 if __name__ == '__main__':
     main()
